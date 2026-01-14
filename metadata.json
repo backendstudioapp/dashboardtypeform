@@ -1,0 +1,5 @@
+{
+  "name": "SetterFlow CRM Dashboard",
+  "description": "A professional lead management dashboard for Setters, featuring real-time Supabase integration, sales dynamics visualization, and prioritized lead tracking.",
+  "requestFramePermissions": []
+}
