@@ -2,19 +2,21 @@
 import React from 'react';
 import { 
   LayoutDashboard, 
-  Users, 
-  HeadphonesIcon 
+  Users,
+  GraduationCap
 } from 'lucide-react';
+import { Section } from '../types';
 
 interface SidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
+  activeSection: Section;
+  setActiveSection: (section: Section) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) => {
   const navItems = [
-    { id: 'analytics', label: 'Analytics', icon: LayoutDashboard },
-    { id: 'leads', label: 'Leads', icon: Users },
+    { id: 'analytics' as Section, label: 'Analytics', icon: LayoutDashboard },
+    { id: 'leads' as Section, label: 'Leads', icon: Users },
+    { id: 'alumnos' as Section, label: 'Alumnos', icon: GraduationCap },
   ];
 
   return (
@@ -36,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) =>
               onClick={() => setActiveSection(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                 isActive 
-                  ? 'bg-blue-50 text-blue-600 font-semibold' 
+                  ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm shadow-blue-50' 
                   : 'text-gray-500 hover:bg-gray-50'
               }`}
             >
@@ -46,19 +48,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) =>
           );
         })}
       </nav>
-
-      <div className="mt-auto p-4 bg-blue-50 rounded-2xl relative overflow-hidden">
-        <div className="relative z-10">
-          <p className="text-xs font-medium text-blue-600 mb-1">Centro de ayuda</p>
-          <p className="text-xs text-gray-600 mb-4">¿Tienes dudas con la gestión de leads?</p>
-          <button className="bg-blue-600 text-white text-xs py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full">
-            Contactar Soporte
-          </button>
-        </div>
-        <div className="absolute -bottom-2 -right-2 opacity-10">
-          <HeadphonesIcon size={60} />
-        </div>
-      </div>
     </div>
   );
 };

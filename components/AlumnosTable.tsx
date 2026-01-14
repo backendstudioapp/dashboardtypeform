@@ -1,24 +1,24 @@
 
 import React from 'react';
-import { Lead, LeadStatus } from '../types';
+import { Alumno, AlumnoStatus } from '../types';
 import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
 
-interface LeadsTableProps {
-  leads: Lead[];
-  onSelectLead?: (lead: Lead) => void;
+interface AlumnosTableProps {
+  alumnos: Alumno[];
+  onSelectAlumno?: (alumno: Alumno) => void;
   currentPage: number;
-  totalLeads: number;
+  totalAlumnos: number;
   pageSize: number;
   onPageChange: (page: number) => void;
   sortOrder: 'asc' | 'desc';
   onToggleSort: () => void;
 }
 
-const LeadsTable: React.FC<LeadsTableProps> = ({ 
-  leads, 
-  onSelectLead, 
+const AlumnosTable: React.FC<AlumnosTableProps> = ({ 
+  alumnos, 
+  onSelectAlumno, 
   currentPage, 
-  totalLeads, 
+  totalAlumnos, 
   pageSize, 
   onPageChange,
   sortOrder,
@@ -26,16 +26,16 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
 }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case LeadStatus.INCOMPLETE:
-        return <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-black uppercase tracking-wider">Formulario incompleto</span>;
-      case LeadStatus.CONTACTED:
-        return <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase tracking-wider">Contactado</span>;
-      case LeadStatus.COMPLETE:
-        return <span className="px-3 py-1 bg-sky-100 text-sky-700 rounded-full text-[10px] font-black uppercase tracking-wider">Formulario completo</span>;
-      case LeadStatus.QUALIFIED:
-        return <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-wider">Calificado</span>;
+      case AlumnoStatus.ACTIVE:
+        return <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase tracking-wider">Activo</span>;
+      case AlumnoStatus.INACTIVE:
+        return <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-black uppercase tracking-wider">Inactivo</span>;
+      case AlumnoStatus.PAID:
+        return <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-black uppercase tracking-wider">Pagado</span>;
+      case AlumnoStatus.PENDING:
+        return <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-[10px] font-black uppercase tracking-wider">Pendiente</span>;
       default:
-        return <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-[10px] font-black uppercase tracking-wider">{status}</span>;
+        return <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-[10px] font-black uppercase tracking-wider">{status || 'Sin estado'}</span>;
     }
   };
 
@@ -43,16 +43,17 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     if (!dateStr) return 'N/A';
     try {
       const parts = dateStr.split('-');
-      if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
-      }
-      return dateStr;
+      return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
     } catch (e) {
       return dateStr;
     }
   };
 
-  const totalPages = Math.ceil(totalLeads / pageSize);
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount || 0);
+  };
+
+  const totalPages = Math.ceil(totalAlumnos / pageSize);
 
   return (
     <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
@@ -60,22 +61,18 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
         <table className="w-full text-left">
           <thead>
             <tr className="bg-gray-50/50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
-              <th className="px-8 py-5">Nombre</th>
-              <th className="px-8 py-5">Teléfono</th>
-              <th className="px-8 py-5">País</th>
+              <th className="px-8 py-5">Alumno</th>
               <th className="px-8 py-5">Estado</th>
+              <th className="px-8 py-5 text-right">Inversión Total</th>
+              <th className="px-8 py-5 text-right text-orange-600">Pendiente</th>
               <th 
                 className="px-8 py-5 cursor-pointer hover:bg-gray-100 transition-colors group select-none"
                 onClick={onToggleSort}
               >
                 <div className="flex items-center gap-2">
-                  <span>Fecha de registro</span>
+                  <span>Fecha Compra</span>
                   <div className="p-1 bg-gray-100 rounded-lg group-hover:bg-blue-50 transition-colors">
-                    {sortOrder === 'asc' ? (
-                      <ArrowUp size={14} className="text-blue-500" />
-                    ) : (
-                      <ArrowDown size={14} className="text-blue-500" />
-                    )}
+                    {sortOrder === 'asc' ? <ArrowUp size={14} className="text-blue-500" /> : <ArrowDown size={14} className="text-blue-500" />}
                   </div>
                 </div>
               </th>
@@ -83,39 +80,38 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {leads.map((lead, idx) => (
+            {alumnos.map((alumno, idx) => (
               <tr 
-                key={`${lead.telefono}-${idx}`} 
+                key={`${alumno.telefono}-${idx}`} 
                 className="hover:bg-blue-50/30 transition-colors group cursor-pointer" 
-                onClick={() => onSelectLead?.(lead)}
+                onClick={() => onSelectAlumno?.(alumno)}
               >
                 <td className="px-8 py-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold">
-                      {lead.nombre.charAt(0)}
+                    <div className="w-10 h-10 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center font-bold">
+                      {alumno.nombre?.charAt(0) || '?'}
                     </div>
-                    <p className="text-sm font-bold text-gray-900">{lead.nombre}</p>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{alumno.nombre} {alumno.apellidos}</p>
+                      <p className="text-[10px] text-gray-400 font-medium">{alumno.email}</p>
+                    </div>
                   </div>
                 </td>
-                <td className="px-8 py-5 text-sm font-medium text-gray-600">{lead.telefono}</td>
-                <td className="px-8 py-5 text-sm font-medium text-gray-600">{lead.pais}</td>
-                <td className="px-8 py-5">
-                  {getStatusBadge(lead.estado)}
-                </td>
-                <td className="px-8 py-5 text-sm font-medium text-gray-600">
-                  {formatDate(lead.fecha_registro)}
-                </td>
+                <td className="px-8 py-5">{getStatusBadge(alumno.estado_general)}</td>
+                <td className="px-8 py-5 text-sm font-bold text-gray-900 text-right">{formatCurrency(alumno.inversion_total)}</td>
+                <td className="px-8 py-5 text-sm font-bold text-orange-600 text-right">{formatCurrency(alumno.importe_pendiente)}</td>
+                <td className="px-8 py-5 text-sm font-medium text-gray-600">{formatDate(alumno.fecha_compra)}</td>
                 <td className="px-8 py-5 text-right">
-                  <button className="text-xs bg-gray-100 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl font-bold text-gray-600 transition-all opacity-0 group-hover:opacity-100 active:scale-95">
-                    Editar
+                  <button className="text-xs bg-gray-100 hover:bg-violet-600 hover:text-white px-4 py-2 rounded-xl font-bold text-gray-600 transition-all opacity-0 group-hover:opacity-100 active:scale-95">
+                    Ficha
                   </button>
                 </td>
               </tr>
             ))}
-            {leads.length === 0 && (
+            {alumnos.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-8 py-20 text-center text-gray-400 font-medium">
-                  No se encontraron leads con estos criterios.
+                <td colSpan={6} className="px-8 py-20 text-center text-gray-400 font-medium italic">
+                  No se encontraron alumnos registrados.
                 </td>
               </tr>
             )}
@@ -123,11 +119,10 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
         </table>
       </div>
 
-      {/* Paginación */}
       {totalPages > 1 && (
         <div className="p-6 bg-gray-50/30 border-t border-gray-100 flex items-center justify-between">
           <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-            Mostrando {leads.length} de {totalLeads} leads
+            Mostrando {alumnos.length} de {totalAlumnos} alumnos
           </div>
           <div className="flex items-center gap-2">
             <button 
@@ -154,4 +149,4 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
   );
 };
 
-export default LeadsTable;
+export default AlumnosTable;

@@ -1,15 +1,22 @@
 
 export enum LeadStatus {
+  INCOMPLETE = 'Formulario incompleto',
+  COMPLETE = 'Formulario completo',
+  CONTACTED = 'Contactado',
   QUALIFIED = 'Calificado',
-  IN_PROCESS = 'En proceso',
-  NOT_FIT = 'No apto',
+  PENDING = 'Pendiente'
+}
+
+export enum AlumnoStatus {
+  ACTIVE = 'Activo',
+  INACTIVE = 'Inactivo',
   PENDING = 'Pendiente',
-  CONTACTED = 'Contactado'
+  PAID = 'Pagado'
 }
 
 export interface Lead {
   nombre: string;
-  telefono: string; // Primary Key
+  telefono: string;
   pais: string;
   interes: string;
   perfil: string;
@@ -21,10 +28,25 @@ export interface Lead {
   fecha_registro: string;
   hora_registro: string;
   estado: string;
-  score?: number; // Optional field for ranking
+  score?: number;
 }
 
-export type Section = 'analytics' | 'leads';
+export interface Alumno {
+  id?: number;
+  nombre: string;
+  apellidos: string;
+  telefono: string;
+  email: string;
+  pais: string;
+  estado_general: string;
+  inversion_total: number;
+  importe_pendiente: number;
+  fecha_compra: string;
+  curso: string;
+  notas?: string;
+}
+
+export type Section = 'analytics' | 'leads' | 'alumnos';
 
 export interface DashboardStats {
   totalLeads: number;
@@ -37,4 +59,9 @@ export interface DashboardStats {
 export interface ChartData {
   date: string;
   count: number;
+}
+
+export interface DateRange {
+  start: Date | null;
+  end: Date | null;
 }
