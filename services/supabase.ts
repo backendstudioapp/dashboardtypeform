@@ -49,12 +49,12 @@ export const fetchAlumnos = async (): Promise<Alumno[]> => {
   }
 };
 
-export const updateAlumno = async (telefono: string, updates: Partial<Alumno>): Promise<boolean> => {
+export const updateAlumno = async (email: string, updates: Partial<Alumno>): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('alumnos')
       .update(updates)
-      .eq('telefono', telefono);
+      .eq('email', email);
     return !error;
   } catch (err) {
     return false;

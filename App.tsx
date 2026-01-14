@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
-  AreaChart, Area
+  AreaChart, Area, Legend
 } from 'recharts';
 
 const PAGE_SIZE = 20;
@@ -100,14 +100,20 @@ const App: React.FC = () => {
       }
     });
 
-    const temporalChart = Object.entries(filteredLeads.reduce((acc, l) => {
-      acc[l.fecha_registro] = (acc[l.fecha_registro] || 0) + 1;
+    // Temporal Chart: Doble Línea (Completos vs Incompletos)
+    const temporalDataMap = filteredLeads.reduce((acc, l) => {
+      const date = l.fecha_registro;
+      if (!acc[date]) acc[date] = { date, completos: 0, incompletos: 0 };
+      if (l.estado === 'Formulario completo') acc[date].completos++;
+      else if (l.estado === 'Formulario incompleto') acc[date].incompletos++;
       return acc;
-    }, {} as Record<string, number>))
-      .map(([date, count]) => ({ date, count }))
+    }, {} as Record<string, { date: string, completos: number, incompletos: number }>);
+
+    // Fix: Added explicit type casting for Object.values to fix 'unknown' type error in sort comparison
+    const temporalChart = (Object.values(temporalDataMap) as { date: string, completos: number, incompletos: number }[])
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    // TABLA DINÁMICA POR PAÍS (Enfoque Completos/Incompletos)
+    // TABLA DINÁMICA POR PAÍS
     const countryDataMap = filteredLeads.reduce((acc, l) => {
       const country = l.pais || 'Desconocido';
       if (!acc[country]) acc[country] = { total: 0, contacted: 0, complete: 0, incomplete: 0 };
@@ -208,7 +214,6 @@ const App: React.FC = () => {
 
         {activeSection === 'analytics' && (
           <div className="space-y-8 animate-in fade-in duration-700">
-            {/* KPIs Principales - Sin Cualificados */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <StatCard title="Total Leads" value={stats.total} icon={<Users size={18} />} trend={stats.todayLeads > 0 ? stats.todayLeads : undefined} trendLabel="hoy" />
               <StatCard title="Completos" value={stats.completeCount} icon={<CheckCircle2 size={18} className="text-emerald-500" />} />
@@ -217,26 +222,31 @@ const App: React.FC = () => {
               <StatCard title="Nuevos Hoy" value={stats.todayLeads} icon={<TrendingUp size={18} className="text-blue-500" />} />
             </div>
 
-            {/* Evolución y Distribución de Estados */}
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 lg:col-span-8 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-                  <TrendingUp size={16} className="text-blue-500" /> Flujo de entrada (Leads)
+                  <TrendingUp size={16} className="text-blue-500" /> Flujo de entrada (Doble Línea)
                 </h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={stats.temporalChart}>
                       <defs>
-                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15}/>
-                          <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                        <linearGradient id="colorCompletos" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.15}/>
+                          <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                        </linearGradient>
+                        <linearGradient id="colorIncompletos" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15}/>
+                          <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f1f1" />
                       <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 10}} dy={10} />
                       <YAxis axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 10}} />
                       <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
-                      <Area type="monotone" dataKey="count" stroke="#3B82F6" strokeWidth={4} fillOpacity={1} fill="url(#colorCount)" />
+                      <Legend verticalAlign="top" height={36}/>
+                      <Area name="Completos" type="monotone" dataKey="completos" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorCompletos)" />
+                      <Area name="Incompletos" type="monotone" dataKey="incompletos" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorIncompletos)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -264,7 +274,6 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* Distribución Horaria */}
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
                 <Clock size={16} className="text-orange-500" /> Horarios de mayor actividad (UTC)
@@ -282,7 +291,6 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            {/* MATRIZ DE CALIDAD POR PAÍS (Ajustada a Completos/Incompletos) */}
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
                 <Globe size={16} className="text-blue-600" /> Rendimiento de Formularios por País

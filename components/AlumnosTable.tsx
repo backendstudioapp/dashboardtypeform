@@ -82,7 +82,7 @@ const AlumnosTable: React.FC<AlumnosTableProps> = ({
           <tbody className="divide-y divide-gray-50">
             {alumnos.map((alumno, idx) => (
               <tr 
-                key={`${alumno.telefono}-${idx}`} 
+                key={`${alumno.email}-${idx}`} 
                 className="hover:bg-blue-50/30 transition-colors group cursor-pointer" 
                 onClick={() => onSelectAlumno?.(alumno)}
               >

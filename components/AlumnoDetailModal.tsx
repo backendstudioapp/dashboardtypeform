@@ -77,18 +77,21 @@ const AlumnoDetailModal: React.FC<AlumnoDetailModalProps> = ({ alumno, onClose, 
   };
 
   const handleSave = async () => {
-    if (!edited || !edited.telefono) return;
+    if (!edited || !edited.email) {
+      setError("El email es necesario para guardar los cambios.");
+      return;
+    }
     setIsSaving(true);
     setError(null);
     
-    // El objeto 'edited' ahora contiene 'notas', que mapea a la columna correcta en Supabase
-    const success = await updateAlumno(edited.telefono, edited);
+    // Llamada al servicio de Supabase para persistir los cambios usando el EMAIL como ID
+    const success = await updateAlumno(edited.email, edited);
     
     if (success) {
       onUpdateSuccess?.();
       onClose();
     } else {
-      setError("No se pudo guardar la información del alumno. Intenta de nuevo.");
+      setError("No se pudo guardar la información del alumno. Asegúrate de que el email sea válido y no esté duplicado.");
     }
     setIsSaving(false);
   };
@@ -130,8 +133,8 @@ const AlumnoDetailModal: React.FC<AlumnoDetailModalProps> = ({ alumno, onClose, 
           <div className="grid grid-cols-2 gap-6">
             <EditableField label="Nombre" value={edited.nombre} onChange={(val) => handleFieldChange('nombre', val)} />
             <EditableField label="Apellidos" value={edited.apellidos} onChange={(val) => handleFieldChange('apellidos', val)} />
+            <EditableField label="Email (Identificador)" value={edited.email} onChange={(val) => handleFieldChange('email', val)} />
             <EditableField label="Teléfono" value={edited.telefono} onChange={(val) => handleFieldChange('telefono', val)} />
-            <EditableField label="Email" value={edited.email} onChange={(val) => handleFieldChange('email', val)} />
             <EditableField label="País" value={edited.pais} onChange={(val) => handleFieldChange('pais', val)} />
             <EditableField 
               label="Estado General" 
@@ -159,7 +162,7 @@ const AlumnoDetailModal: React.FC<AlumnoDetailModalProps> = ({ alumno, onClose, 
             <label className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-1 block">Notas del alumno</label>
             <textarea 
               className="w-full bg-white border border-gray-100 rounded-2xl px-5 py-4 text-sm font-semibold text-gray-700 focus:ring-2 focus:ring-violet-500 outline-none transition-all min-h-[150px]"
-              placeholder="Escribe aquí los desafíos, situaciones o notas relevantes sobre el alumno..."
+              placeholder="Notas relevantes sobre el seguimiento..."
               value={edited.notas || ''}
               onChange={(e) => handleFieldChange('notas', e.target.value)}
             />
