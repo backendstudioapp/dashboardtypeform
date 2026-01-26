@@ -3,12 +3,10 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import LeadsTable from './components/LeadsTable';
-import AlumnosTable from './components/AlumnosTable';
 import LeadDetailModal from './components/LeadDetailModal';
-import AlumnoDetailModal from './components/AlumnoDetailModal';
 import DateRangePicker from './components/DateRangePicker';
-import { Lead, Alumno, Section, LeadStatus, AlumnoStatus, DateRange } from './types';
-import { fetchLeads, fetchAlumnos } from './services/supabase';
+import { Lead, Section, LeadStatus, DateRange } from './types';
+import { fetchLeads } from './services/leads';
 import { 
   Users, 
   Target, 
@@ -16,7 +14,6 @@ import {
   RotateCw,
   Clock,
   TrendingUp,
-  AlertCircle,
   CheckCircle2,
   FileText,
   Globe,
@@ -40,23 +37,12 @@ const App: React.FC = () => {
   const [leadSortOrder, setLeadSortOrder] = useState<'asc' | 'desc'>('desc');
   const [leadPage, setLeadPage] = useState(1);
 
-  const [alumnos, setAlumnos] = useState<Alumno[]>([]);
-  const [selectedAlumno, setSelectedAlumno] = useState<Alumno | null>(null);
-  const [alumnoSearch, setAlumnoSearch] = useState('');
-  const [alumnoStatusFilter, setAlumnoStatusFilter] = useState('Todos');
-  const [alumnoSortOrder, setAlumnoSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [alumnoPage, setAlumnoPage] = useState(1);
-
   const [dateRange, setDateRange] = useState<DateRange>({ start: null, end: null });
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
-    const [leadsData, alumnosData] = await Promise.all([
-      fetchLeads(),
-      fetchAlumnos()
-    ]);
+    const leadsData = await fetchLeads();
     setLeads(leadsData);
-    setAlumnos(alumnosData);
     setIsLoading(false);
   }, []);
 
@@ -86,7 +72,6 @@ const App: React.FC = () => {
     const incompleteCount = filteredLeads.filter(l => l.estado === 'Formulario incompleto').length;
     const contacted = filteredLeads.filter(l => l.estado === 'Contactado').length;
     
-    // Gráficos básicos
     const statusChart = Object.entries(filteredLeads.reduce((acc, l) => {
       acc[l.estado] = (acc[l.estado] || 0) + 1;
       return acc;
@@ -100,7 +85,6 @@ const App: React.FC = () => {
       }
     });
 
-    // Temporal Chart: Doble Línea (Completos vs Incompletos)
     const temporalDataMap = filteredLeads.reduce((acc, l) => {
       const date = l.fecha_registro;
       if (!acc[date]) acc[date] = { date, completos: 0, incompletos: 0 };
@@ -109,11 +93,9 @@ const App: React.FC = () => {
       return acc;
     }, {} as Record<string, { date: string, completos: number, incompletos: number }>);
 
-    // Fix: Added explicit type casting for Object.values to fix 'unknown' type error in sort comparison
     const temporalChart = (Object.values(temporalDataMap) as { date: string, completos: number, incompletos: number }[])
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    // TABLA DINÁMICA POR PAÍS
     const countryDataMap = filteredLeads.reduce((acc, l) => {
       const country = l.pais || 'Desconocido';
       if (!acc[country]) acc[country] = { total: 0, contacted: 0, complete: 0, incomplete: 0 };
@@ -160,28 +142,14 @@ const App: React.FC = () => {
     });
   }, [leads, leadSearch, leadStatusFilter, leadSortOrder]);
 
-  const processedAlumnos = useMemo(() => {
-    return alumnos.filter(a => {
-      const fullName = `${a.nombre} ${a.apellidos}`.toLowerCase();
-      const matchesSearch = fullName.includes(alumnoSearch.toLowerCase());
-      const matchesStatus = alumnoStatusFilter === 'Todos' || a.estado_general === alumnoStatusFilter;
-      return matchesSearch && matchesStatus;
-    }).sort((a, b) => {
-      const dateA = new Date(a.fecha_compra).getTime();
-      const dateB = new Date(b.fecha_compra).getTime();
-      return alumnoSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
-    });
-  }, [alumnos, alumnoSearch, alumnoStatusFilter, alumnoSortOrder]);
-
   const availableLeadStatuses = useMemo(() => Array.from(new Set(leads.map(l => l.estado))).sort(), [leads]);
-  const availableAlumnoStatuses = useMemo(() => Array.from(new Set(alumnos.map(a => a.estado_general))).sort(), [alumnos]);
 
   if (isLoading && leads.length === 0) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-500 font-black uppercase tracking-widest text-xs">Sincronizando Leads...</p>
+          <p className="text-gray-500 font-black uppercase tracking-widest text-xs">Cargando Panel...</p>
         </div>
       </div>
     );
@@ -197,11 +165,10 @@ const App: React.FC = () => {
         <header className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-black text-gray-900 tracking-tight">
-              {activeSection === 'analytics' ? 'Control de Conversión' : 
-               activeSection === 'leads' ? 'Base de Datos Leads' : 'Panel de Alumnos'}
+              {activeSection === 'analytics' ? 'Control de Conversión' : 'Base de Datos Leads'}
             </h1>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-              {activeSection === 'analytics' ? 'Rendimiento de Formularios y Tráfico' : 'Gestión Operativa'}
+              {activeSection === 'analytics' ? 'Rendimiento de Formularios y Tráfico' : 'Gestión Operativa de Leads'}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -225,7 +192,7 @@ const App: React.FC = () => {
             <div className="grid grid-cols-12 gap-6">
               <div className="col-span-12 lg:col-span-8 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-                  <TrendingUp size={16} className="text-blue-500" /> Flujo de entrada (Doble Línea)
+                  <TrendingUp size={16} className="text-blue-500" /> Flujo de entrada (Completos vs Incompletos)
                 </h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
@@ -254,7 +221,7 @@ const App: React.FC = () => {
 
               <div className="col-span-12 lg:col-span-4 bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-                  <FileText size={16} className="text-violet-500" /> Pipeline Actual
+                  <FileText size={16} className="text-violet-500" /> Pipeline de Estados
                 </h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
@@ -276,7 +243,7 @@ const App: React.FC = () => {
 
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-                <Clock size={16} className="text-orange-500" /> Horarios de mayor actividad (UTC)
+                <Clock size={16} className="text-orange-500" /> Horarios de mayor actividad
               </h3>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
@@ -293,7 +260,7 @@ const App: React.FC = () => {
 
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
               <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-                <Globe size={16} className="text-blue-600" /> Rendimiento de Formularios por País
+                <Globe size={16} className="text-blue-600" /> Rendimiento por País
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
@@ -363,39 +330,9 @@ const App: React.FC = () => {
             />
           </div>
         )}
-
-        {activeSection === 'alumnos' && (
-          <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-wrap items-center gap-4">
-              <div className="flex-1 min-w-[300px] relative group">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-violet-500 transition-colors" size={18} />
-                <input 
-                  type="text" placeholder="Buscar alumno..." 
-                  className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-violet-100 outline-none transition-all font-semibold text-gray-800"
-                  value={alumnoSearch} onChange={(e) => setAlumnoSearch(e.target.value)}
-                />
-              </div>
-              <select 
-                className="bg-gray-50 border border-transparent rounded-2xl px-6 py-4 text-xs font-black text-gray-600 outline-none transition-all uppercase tracking-widest cursor-pointer"
-                value={alumnoStatusFilter} onChange={(e) => setAlumnoStatusFilter(e.target.value)}
-              >
-                <option value="Todos">Todos los estados</option>
-                {availableAlumnoStatuses.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-            <AlumnosTable 
-              alumnos={processedAlumnos.slice((alumnoPage-1)*PAGE_SIZE, alumnoPage*PAGE_SIZE)} 
-              onSelectAlumno={setSelectedAlumno}
-              currentPage={alumnoPage} totalAlumnos={processedAlumnos.length}
-              pageSize={PAGE_SIZE} onPageChange={setAlumnoPage}
-              sortOrder={alumnoSortOrder} onToggleSort={() => setAlumnoSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-            />
-          </div>
-        )}
       </main>
 
       <LeadDetailModal lead={selectedLead} onClose={() => setSelectedLead(null)} onUpdateSuccess={loadData} />
-      <AlumnoDetailModal alumno={selectedAlumno} onClose={() => setSelectedAlumno(null)} onUpdateSuccess={loadData} />
     </div>
   );
 };

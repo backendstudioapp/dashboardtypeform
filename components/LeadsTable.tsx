@@ -83,9 +83,9 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {leads.map((lead, idx) => (
+            {leads.map((lead) => (
               <tr 
-                key={`${lead.telefono}-${idx}`} 
+                key={lead.telefono} 
                 className="hover:bg-blue-50/30 transition-colors group cursor-pointer" 
                 onClick={() => onSelectLead?.(lead)}
               >
@@ -107,7 +107,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                 </td>
                 <td className="px-8 py-5 text-right">
                   <button className="text-xs bg-gray-100 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl font-bold text-gray-600 transition-all opacity-0 group-hover:opacity-100 active:scale-95">
-                    Editar
+                    Detalles
                   </button>
                 </td>
               </tr>
@@ -115,7 +115,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
             {leads.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-8 py-20 text-center text-gray-400 font-medium">
-                  No se encontraron leads con estos criterios.
+                  No hay datos disponibles en este momento.
                 </td>
               </tr>
             )}
@@ -123,7 +123,6 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
         </table>
       </div>
 
-      {/* Paginación */}
       {totalPages > 1 && (
         <div className="p-6 bg-gray-50/30 border-t border-gray-100 flex items-center justify-between">
           <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">

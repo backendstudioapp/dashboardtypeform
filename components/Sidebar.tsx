@@ -2,8 +2,7 @@
 import React from 'react';
 import { 
   LayoutDashboard, 
-  Users,
-  GraduationCap
+  Users
 } from 'lucide-react';
 import { Section } from '../types';
 
@@ -16,7 +15,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) =>
   const navItems = [
     { id: 'analytics' as Section, label: 'Analytics', icon: LayoutDashboard },
     { id: 'leads' as Section, label: 'Leads', icon: Users },
-    { id: 'alumnos' as Section, label: 'Alumnos', icon: GraduationCap },
   ];
 
   return (

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, Calendar, Clock, Briefcase, Target, Wallet, Save, Loader2 } from 'lucide-react';
 import { Lead, LeadStatus } from '../types';
-import { updateLead } from '../services/supabase';
+import { updateLead } from '../services/leads';
 
 interface LeadDetailModalProps {
   lead: Lead | null;

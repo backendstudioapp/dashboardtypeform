@@ -7,13 +7,6 @@ export enum LeadStatus {
   PENDING = 'Pendiente'
 }
 
-export enum AlumnoStatus {
-  ACTIVE = 'Activo',
-  INACTIVE = 'Inactivo',
-  PENDING = 'Pendiente',
-  PAID = 'Pagado'
-}
-
 export interface Lead {
   nombre: string;
   telefono: string;
@@ -31,22 +24,7 @@ export interface Lead {
   score?: number;
 }
 
-export interface Alumno {
-  id?: number;
-  nombre: string;
-  apellidos: string;
-  telefono: string;
-  email: string;
-  pais: string;
-  estado_general: string;
-  inversion_total: number;
-  importe_pendiente: number;
-  fecha_compra: string;
-  curso: string;
-  notas?: string;
-}
-
-export type Section = 'analytics' | 'leads' | 'alumnos';
+export type Section = 'analytics' | 'leads';
 
 export interface DashboardStats {
   totalLeads: number;
