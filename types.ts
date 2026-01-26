@@ -8,6 +8,7 @@ export enum LeadStatus {
 }
 
 export interface Lead {
+  id?: string;
   nombre: string;
   telefono: string;
   pais: string;
@@ -21,7 +22,24 @@ export interface Lead {
   fecha_registro: string;
   hora_registro: string;
   estado: string;
+  origen: string;
+  cualifica: string;
+  closer: string;
+  terapias_anteriores?: string;
+  fecha_llamada?: string;
+  fecha_cierre?: string;
+  cuotas?: number;
+  plataforma?: string;
+  cash_collected?: number;
+  comision?: number;
   score?: number;
+}
+
+export interface Note {
+  id: string;
+  lead_id: string;
+  content: string;
+  created_at: string;
 }
 
 export type Section = 'analytics' | 'leads';

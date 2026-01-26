@@ -7,9 +7,9 @@ import LeadDetailModal from './components/LeadDetailModal';
 import DateRangePicker from './components/DateRangePicker';
 import { Lead, Section, LeadStatus, DateRange } from './types';
 import { fetchLeads } from './services/leads';
-import { 
-  Users, 
-  Target, 
+import {
+  Users,
+  Target,
   Search,
   RotateCw,
   Clock,
@@ -19,7 +19,7 @@ import {
   Globe,
   Ban
 } from 'lucide-react';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
   AreaChart, Area, Legend
 } from 'recharts';
@@ -53,7 +53,7 @@ const App: React.FC = () => {
   // --- ANALYTICS ENGINE ---
   const stats = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
-    
+
     const filteredLeads = leads.filter(l => {
       if (!dateRange.start) return true;
       const d = new Date(l.fecha_registro);
@@ -67,11 +67,11 @@ const App: React.FC = () => {
 
     const total = filteredLeads.length;
     const todayLeads = leads.filter(l => l.fecha_registro === today).length;
-    
+
     const completeCount = filteredLeads.filter(l => l.estado === 'Formulario completo').length;
     const incompleteCount = filteredLeads.filter(l => l.estado === 'Formulario incompleto').length;
     const contacted = filteredLeads.filter(l => l.estado === 'Contactado').length;
-    
+
     const statusChart = Object.entries(filteredLeads.reduce((acc, l) => {
       acc[l.estado] = (acc[l.estado] || 0) + 1;
       return acc;
@@ -134,13 +134,30 @@ const App: React.FC = () => {
     return leads.filter(l => {
       const matchesSearch = l.nombre.toLowerCase().includes(leadSearch.toLowerCase());
       const matchesStatus = leadStatusFilter === 'Todos' || l.estado === leadStatusFilter;
-      return matchesSearch && matchesStatus;
+
+      let matchesDate = true;
+      if (dateRange.start) {
+        const leadDate = new Date(l.fecha_registro);
+        const startDate = new Date(dateRange.start);
+        startDate.setHours(0, 0, 0, 0); // Normalize to start of day
+        leadDate.setHours(0, 0, 0, 0); // Normalize lead date
+
+        if (dateRange.end) {
+          const endDate = new Date(dateRange.end);
+          endDate.setHours(23, 59, 59, 999); // Normalize to end of day
+          matchesDate = leadDate >= startDate && leadDate <= endDate;
+        } else {
+          matchesDate = leadDate.getTime() === startDate.getTime();
+        }
+      }
+
+      return matchesSearch && matchesStatus && matchesDate;
     }).sort((a, b) => {
       const dateA = new Date(a.fecha_registro).getTime();
       const dateB = new Date(b.fecha_registro).getTime();
       return leadSortOrder === 'asc' ? dateA - dateB : dateB - dateA;
     });
-  }, [leads, leadSearch, leadStatusFilter, leadSortOrder]);
+  }, [leads, leadSearch, leadStatusFilter, leadSortOrder, dateRange]);
 
   const availableLeadStatuses = useMemo(() => Array.from(new Set(leads.map(l => l.estado))).sort(), [leads]);
 
@@ -160,7 +177,7 @@ const App: React.FC = () => {
   return (
     <div className="flex h-screen w-full bg-[#F3F4F6] overflow-hidden">
       <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
-      
+
       <main className="flex-1 overflow-y-auto p-8 custom-scrollbar relative">
         <header className="flex justify-between items-center mb-8">
           <div>
@@ -199,19 +216,19 @@ const App: React.FC = () => {
                     <AreaChart data={stats.temporalChart}>
                       <defs>
                         <linearGradient id="colorCompletos" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.15}/>
-                          <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#10B981" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="colorIncompletos" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15}/>
-                          <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#EF4444" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f1f1" />
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 10}} dy={10} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 10}} />
-                      <Tooltip contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'}} />
-                      <Legend verticalAlign="top" height={36}/>
+                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 10 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 10 }} />
+                      <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                      <Legend verticalAlign="top" height={36} />
                       <Area name="Completos" type="monotone" dataKey="completos" stroke="#10B981" strokeWidth={3} fillOpacity={1} fill="url(#colorCompletos)" />
                       <Area name="Incompletos" type="monotone" dataKey="incompletos" stroke="#EF4444" strokeWidth={3} fillOpacity={1} fill="url(#colorIncompletos)" />
                     </AreaChart>
@@ -228,8 +245,8 @@ const App: React.FC = () => {
                     <BarChart data={stats.statusChart} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f1f1" />
                       <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#4B5563', fontSize: 9, fontWeight: 700}} width={120} />
-                      <Tooltip contentStyle={{borderRadius: '12px'}} />
+                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#4B5563', fontSize: 9, fontWeight: 700 }} width={120} />
+                      <Tooltip contentStyle={{ borderRadius: '12px' }} />
                       <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                         {stats.statusChart.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -249,7 +266,7 @@ const App: React.FC = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.hourlyData}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f1f1" />
-                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fill: '#9CA3AF', fontSize: 9}} interval={2} />
+                    <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 9 }} interval={2} />
                     <YAxis hide />
                     <Tooltip />
                     <Bar dataKey="count" fill="#F59E0B" radius={[6, 6, 0, 0]} barSize={20} />
@@ -285,8 +302,8 @@ const App: React.FC = () => {
                         <td className="py-4 text-right">
                           <div className="flex items-center justify-end gap-3">
                             <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-blue-500 rounded-full" 
+                              <div
+                                className="h-full bg-blue-500 rounded-full"
                                 style={{ width: `${item.completionRate}%` }}
                               />
                             </div>
@@ -307,13 +324,13 @@ const App: React.FC = () => {
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-wrap items-center gap-4">
               <div className="flex-1 min-w-[300px] relative group">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" size={18} />
-                <input 
-                  type="text" placeholder="Buscar lead..." 
+                <input
+                  type="text" placeholder="Buscar lead..."
                   className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-blue-100 outline-none transition-all font-semibold text-gray-800"
                   value={leadSearch} onChange={(e) => setLeadSearch(e.target.value)}
                 />
               </div>
-              <select 
+              <select
                 className="bg-gray-50 border border-transparent rounded-2xl px-6 py-4 text-xs font-black text-gray-600 outline-none transition-all uppercase tracking-widest cursor-pointer"
                 value={leadStatusFilter} onChange={(e) => setLeadStatusFilter(e.target.value)}
               >
@@ -321,8 +338,8 @@ const App: React.FC = () => {
                 {availableLeadStatuses.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
-            <LeadsTable 
-              leads={processedLeads.slice((leadPage-1)*PAGE_SIZE, leadPage*PAGE_SIZE)} 
+            <LeadsTable
+              leads={processedLeads.slice((leadPage - 1) * PAGE_SIZE, leadPage * PAGE_SIZE)}
               onSelectLead={setSelectedLead}
               currentPage={leadPage} totalLeads={processedLeads.length}
               pageSize={PAGE_SIZE} onPageChange={setLeadPage}

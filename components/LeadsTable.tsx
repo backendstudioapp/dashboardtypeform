@@ -14,12 +14,12 @@ interface LeadsTableProps {
   onToggleSort: () => void;
 }
 
-const LeadsTable: React.FC<LeadsTableProps> = ({ 
-  leads, 
-  onSelectLead, 
-  currentPage, 
-  totalLeads, 
-  pageSize, 
+const LeadsTable: React.FC<LeadsTableProps> = ({
+  leads,
+  onSelectLead,
+  currentPage,
+  totalLeads,
+  pageSize,
   onPageChange,
   sortOrder,
   onToggleSort
@@ -60,16 +60,18 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
         <table className="w-full text-left">
           <thead>
             <tr className="bg-gray-50/50 text-gray-400 text-[10px] font-black uppercase tracking-widest border-b border-gray-100">
-              <th className="px-8 py-5">Nombre</th>
-              <th className="px-8 py-5">Teléfono</th>
-              <th className="px-8 py-5">País</th>
-              <th className="px-8 py-5">Estado</th>
-              <th 
-                className="px-8 py-5 cursor-pointer hover:bg-gray-100 transition-colors group select-none"
+              <th className="px-6 py-5">Nombre</th>
+              <th className="px-6 py-5">Teléfono</th>
+              <th className="px-6 py-5">Origen</th>
+              <th className="px-6 py-5">Estado</th>
+              <th className="px-6 py-5">Cualifica</th>
+              <th className="px-6 py-5">Closer</th>
+              <th
+                className="px-6 py-5 cursor-pointer hover:bg-gray-100 transition-colors group select-none"
                 onClick={onToggleSort}
               >
                 <div className="flex items-center gap-2">
-                  <span>Fecha de registro</span>
+                  <span>Fecha</span>
                   <div className="p-1 bg-gray-100 rounded-lg group-hover:bg-blue-50 transition-colors">
                     {sortOrder === 'asc' ? (
                       <ArrowUp size={14} className="text-blue-500" />
@@ -79,33 +81,37 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                   </div>
                 </div>
               </th>
-              <th className="px-8 py-5 text-right">Acción</th>
+              <th className="px-6 py-5 text-right flex justify-end">Acción</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {leads.map((lead) => (
-              <tr 
-                key={lead.telefono} 
-                className="hover:bg-blue-50/30 transition-colors group cursor-pointer" 
+              <tr
+                key={lead.telefono}
+                className="hover:bg-blue-50/30 transition-colors group cursor-pointer"
                 onClick={() => onSelectLead?.(lead)}
               >
-                <td className="px-8 py-5">
+                <td className="px-6 py-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold">
+                    <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold flex-shrink-0">
                       {lead.nombre.charAt(0)}
                     </div>
-                    <p className="text-sm font-bold text-gray-900">{lead.nombre}</p>
+                    <p className="text-sm font-bold text-gray-900 truncate max-w-[150px]" title={lead.nombre}>{lead.nombre}</p>
                   </div>
                 </td>
-                <td className="px-8 py-5 text-sm font-medium text-gray-600">{lead.telefono}</td>
-                <td className="px-8 py-5 text-sm font-medium text-gray-600">{lead.pais}</td>
-                <td className="px-8 py-5">
+                <td className="px-6 py-5 text-sm font-medium text-gray-600">
+                  {lead.telefono.startsWith('+') ? lead.telefono : `+${lead.telefono}`}
+                </td>
+                <td className="px-6 py-5 text-sm font-medium text-gray-600 truncate max-w-[120px]" title={lead.origen}>{lead.origen}</td>
+                <td className="px-6 py-5">
                   {getStatusBadge(lead.estado)}
                 </td>
-                <td className="px-8 py-5 text-sm font-medium text-gray-600">
+                <td className="px-6 py-5 text-sm font-black text-gray-700">{lead.cualifica}</td>
+                <td className="px-6 py-5 text-sm font-medium text-gray-600 truncate max-w-[100px]" title={lead.closer}>{lead.closer}</td>
+                <td className="px-6 py-5 text-sm font-medium text-gray-600 whitespace-nowrap">
                   {formatDate(lead.fecha_registro)}
                 </td>
-                <td className="px-8 py-5 text-right">
+                <td className="px-6 py-5 text-right">
                   <button className="text-xs bg-gray-100 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl font-bold text-gray-600 transition-all opacity-0 group-hover:opacity-100 active:scale-95">
                     Detalles
                   </button>
@@ -129,7 +135,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
             Mostrando {leads.length} de {totalLeads} leads
           </div>
           <div className="flex items-center gap-2">
-            <button 
+            <button
               disabled={currentPage === 1}
               onClick={() => onPageChange(currentPage - 1)}
               className="p-2 border border-gray-200 rounded-xl text-gray-400 hover:bg-white hover:text-blue-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all active:scale-90"
@@ -139,7 +145,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
             <div className="px-4 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-700 shadow-sm">
               Página {currentPage} de {totalPages}
             </div>
-            <button 
+            <button
               disabled={currentPage === totalPages}
               onClick={() => onPageChange(currentPage + 1)}
               className="p-2 border border-gray-200 rounded-xl text-gray-400 hover:bg-white hover:text-blue-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all active:scale-90"
