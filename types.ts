@@ -1,10 +1,17 @@
 
 export enum LeadStatus {
+  SALE = 'Venta cerrada',
+  RESERVE = 'Reserva',
+  NOT_QUALIFIED = 'No cualifica',
+  FOLLOW_UP = 'Seguimiento',
+  CONTACTED = 'Contactado',
+  RECOVERED = 'Lead recuperado',
+  NO_SHOW = 'No show',
+  NO_ANSWER = 'No contesta',
+  NEGATIVE = 'Negativo',
   INCOMPLETE = 'Formulario incompleto',
   COMPLETE = 'Formulario completo',
-  CONTACTED = 'Contactado',
-  QUALIFIED = 'Calificado',
-  PENDING = 'Pendiente'
+  QUALIFIED = 'Calificado'
 }
 
 export interface Lead {
@@ -46,10 +53,21 @@ export type Section = 'analytics' | 'leads';
 
 export interface DashboardStats {
   totalLeads: number;
+  todayLeads: number;
   leadsPorEstado: Record<string, number>;
   topPais: string;
   interesComun: string;
   leadsMes: number;
+  qualifiedCount: number;
+  notQualifiedCount: number;
+  cashCollected: number;
+  completeCount: number;
+  incompleteCount: number;
+  contactRate: number;
+  temporalChart: ChartData[];
+  countryMatrix: any[];
+  statusChart: any[];
+  hourlyData: any[];
 }
 
 export interface ChartData {

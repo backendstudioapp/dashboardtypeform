@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Lead, LeadStatus } from '../types';
-import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, CheckCircle2, XCircle } from 'lucide-react';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -39,6 +39,17 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
     }
   };
 
+  const getCualificaIcon = (value: string) => {
+    const normalized = value.toLowerCase().trim();
+    if (normalized === 'si') {
+      return <div className="flex justify-center"><CheckCircle2 size={20} className="text-emerald-500" /></div>;
+    }
+    if (normalized === 'no') {
+      return <div className="flex justify-center"><XCircle size={20} className="text-red-500" /></div>;
+    }
+    return <span className="text-gray-400 text-center block">-</span>;
+  };
+
   const formatDate = (dateStr: string) => {
     if (!dateStr) return 'N/A';
     try {
@@ -64,7 +75,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
               <th className="px-6 py-5">Teléfono</th>
               <th className="px-6 py-5">Origen</th>
               <th className="px-6 py-5">Estado</th>
-              <th className="px-6 py-5">Cualifica</th>
+              <th className="px-6 py-5 text-center">Cualifica</th>
               <th className="px-6 py-5">Closer</th>
               <th
                 className="px-6 py-5 cursor-pointer hover:bg-gray-100 transition-colors group select-none"
@@ -81,7 +92,7 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                   </div>
                 </div>
               </th>
-              <th className="px-6 py-5 text-right flex justify-end">Acción</th>
+
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -106,21 +117,19 @@ const LeadsTable: React.FC<LeadsTableProps> = ({
                 <td className="px-6 py-5">
                   {getStatusBadge(lead.estado)}
                 </td>
-                <td className="px-6 py-5 text-sm font-black text-gray-700">{lead.cualifica}</td>
+                <td className="px-6 py-5">
+                  {getCualificaIcon(lead.cualifica)}
+                </td>
                 <td className="px-6 py-5 text-sm font-medium text-gray-600 truncate max-w-[100px]" title={lead.closer}>{lead.closer}</td>
                 <td className="px-6 py-5 text-sm font-medium text-gray-600 whitespace-nowrap">
                   {formatDate(lead.fecha_registro)}
                 </td>
-                <td className="px-6 py-5 text-right">
-                  <button className="text-xs bg-gray-100 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-xl font-bold text-gray-600 transition-all opacity-0 group-hover:opacity-100 active:scale-95">
-                    Detalles
-                  </button>
-                </td>
+
               </tr>
             ))}
             {leads.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-8 py-20 text-center text-gray-400 font-medium">
+                <td colSpan={7} className="px-8 py-20 text-center text-gray-400 font-medium">
                   No hay datos disponibles en este momento.
                 </td>
               </tr>

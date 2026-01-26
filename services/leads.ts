@@ -3,12 +3,21 @@ import { Lead } from '../types';
 import { supabase } from '../lib/supabase';
 
 // Function to fetch leads from Supabase
-export const fetchLeads = async (): Promise<Lead[]> => {
+export const fetchLeads = async (accessRole?: 'admin' | 'closer', userName?: string): Promise<Lead[]> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('leads')
       .select('*')
       .order('fecha_registro', { ascending: false });
+
+    // Apply role-based filtering
+    // Administrators (Lucem/Albert) see everything.
+    // Closers (Natalia/Daniel) only see leads assigned to them.
+    if (accessRole === 'closer' && userName) {
+      query = query.eq('closer', userName);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching leads:', error);

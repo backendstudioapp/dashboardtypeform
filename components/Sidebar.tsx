@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { 
-  LayoutDashboard, 
+import {
+  LayoutDashboard,
   Users
 } from 'lucide-react';
 import { Section } from '../types';
@@ -9,9 +9,11 @@ import { Section } from '../types';
 interface SidebarProps {
   activeSection: Section;
   setActiveSection: (section: Section) => void;
+  onLogout?: () => void;
+  userName?: string;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection, onLogout, userName }) => {
   const navItems = [
     { id: 'analytics' as Section, label: 'Analytics', icon: LayoutDashboard },
     { id: 'leads' as Section, label: 'Leads', icon: Users },
@@ -21,9 +23,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) =>
     <div className="w-64 bg-white h-full border-r border-gray-100 flex flex-col p-6 overflow-y-auto custom-scrollbar">
       <div className="flex items-center gap-2 mb-10 px-2">
         <div className="w-8 h-8 bg-gradient-to-tr from-violet-600 to-blue-500 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold">S</span>
+          <span className="text-white font-bold">R</span>
         </div>
-        <span className="text-xl font-bold text-gray-800">SetterFlow</span>
+        <span className="text-xl font-bold text-gray-800">Revolución Pineal</span>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -34,11 +36,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) =>
             <button
               key={item.id}
               onClick={() => setActiveSection(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive 
-                  ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm shadow-blue-50' 
-                  : 'text-gray-500 hover:bg-gray-50'
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
+                ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm shadow-blue-50'
+                : 'text-gray-500 hover:bg-gray-50'
+                }`}
             >
               <Icon size={20} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
               <span>{item.label}</span>
@@ -46,6 +47,24 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, setActiveSection }) =>
           );
         })}
       </nav>
+
+      <div className="mt-auto pt-6 border-t border-gray-100">
+        <div className="flex items-center gap-3 px-2 mb-4">
+          <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-bold">
+            {userName ? userName.charAt(0) : 'U'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-900 truncate">{userName || 'Usuario'}</p>
+            <p className="text-[10px] font-medium text-gray-400">En línea</p>
+          </div>
+        </div>
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+        >
+          Cerrar Sesión
+        </button>
+      </div>
     </div>
   );
 };
